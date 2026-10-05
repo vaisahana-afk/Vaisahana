@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from io import StringIO
 import traceback
 
@@ -18,16 +19,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+=======
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI(title="FastAPI Quickstart")
+
+>>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
 
 class Message(BaseModel):
     text: str
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
 class AMLTransaction(BaseModel):
     transaction_id: str
     amount: float
     source_country: str
     destination_country: str
 
+<<<<<<< HEAD
 class RawAMLTransaction(BaseModel):
     transaction_id: str | None = None
     amount: float = 0.0
@@ -36,19 +49,30 @@ class RawAMLTransaction(BaseModel):
 
 class RegressionInput(BaseModel):
     features: list[float]
+=======
+>>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
 
 @app.get("/")
 def home():
     return {"message": "Your FastAPI app is running!"}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
 @app.get("/hello/{name}")
 def hello(name: str):
     return {"message": f"Hello, {name}!"}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
 @app.post("/messages")
 def create_message(message: Message):
     return {"received": message.text}
 
+<<<<<<< HEAD
 @app.post("/predict")
 def predict_transaction(transaction: AMLTransaction):
     try:
@@ -132,3 +156,38 @@ async def upload_raw_csv(file: UploadFile = File(...)):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
+=======
+
+@app.post("/predict")
+def predict_transaction(transaction: AMLTransaction):
+    country_names = {
+        "SG": "Singapore",
+        "AE": "United Arab Emirates",
+    }
+
+    is_suspicious = (
+        transaction.amount > 10000
+        and transaction.source_country != transaction.destination_country
+    )
+
+    payload = {
+        "transaction_id": transaction.transaction_id,
+        "amount": transaction.amount,
+        "source_country": transaction.source_country,
+        "source_country_name": country_names.get(transaction.source_country, transaction.source_country),
+        "destination_country": transaction.destination_country,
+        "destination_country_name": country_names.get(transaction.destination_country, transaction.destination_country),
+        "is_suspicious": is_suspicious,
+        "status": "flagged" if is_suspicious else "normal",
+    }
+
+    if transaction.source_country == "SG":
+        payload["risk_note"] = "Singapore outbound transfer pattern detected."
+        payload["country_context"] = {
+            "origin": "Singapore",
+            "destination": payload["destination_country_name"],
+            "related_alert": "Review for higher AML scrutiny."
+        }
+
+    return payload
+>>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
