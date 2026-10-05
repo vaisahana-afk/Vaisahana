@@ -1,0 +1,10 @@
+### Test FastAPI AML Endpoint
+POST http://localhost:8000/predict
+Content-Type: application/json
+
+{
+    "transaction_id": "TXN99520",
+    "amount": 50000,
+    "source_country": "SG",
+    "destination_country": "AE"
+}
