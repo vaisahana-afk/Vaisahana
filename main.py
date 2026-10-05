@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from io import StringIO
 import traceback
 
@@ -19,28 +18,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-=======
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 app = FastAPI(title="FastAPI Quickstart")
 
->>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
-
 class Message(BaseModel):
     text: str
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
 class AMLTransaction(BaseModel):
     transaction_id: str
     amount: float
     source_country: str
     destination_country: str
 
-<<<<<<< HEAD
 class RawAMLTransaction(BaseModel):
     transaction_id: str | None = None
     amount: float = 0.0
@@ -49,30 +40,17 @@ class RawAMLTransaction(BaseModel):
 
 class RegressionInput(BaseModel):
     features: list[float]
-=======
->>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
-
 @app.get("/")
 def home():
     return {"message": "Your FastAPI app is running!"}
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
 @app.get("/hello/{name}")
 def hello(name: str):
     return {"message": f"Hello, {name}!"}
-
-<<<<<<< HEAD
-=======
-
->>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
 @app.post("/messages")
 def create_message(message: Message):
     return {"received": message.text}
 
-<<<<<<< HEAD
 @app.post("/predict")
 def predict_transaction(transaction: AMLTransaction):
     try:
@@ -156,8 +134,6 @@ async def upload_raw_csv(file: UploadFile = File(...)):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
-=======
-
 @app.post("/predict")
 def predict_transaction(transaction: AMLTransaction):
     country_names = {
@@ -190,4 +166,4 @@ def predict_transaction(transaction: AMLTransaction):
         }
 
     return payload
->>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
+
