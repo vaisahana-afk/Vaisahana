@@ -1,6 +1,4 @@
-<<<<<<< HEAD
-fastapi[standard]
+fastapi
 pandas
-=======
-fastapi[standard]
->>>>>>> 47296a4e2a4079faf242d0b335cabd738ad7fbae
+
+
