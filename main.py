@@ -1,6 +1,5 @@
 from io import StringIO
 import traceback
-
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -8,9 +7,10 @@ import pandas as pd
 import numpy as np
 import model
 
+# 1. Initialize the app ONLY ONCE
 app = FastAPI(title="FastAPI Quickstart")
 
-# Enable CORS so your web browser can communicate securely with the server port
+# 2. Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,11 +18,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-from fastapi import FastAPI
-from pydantic import BaseModel
 
-app = FastAPI(title="FastAPI Quickstart")
-
+# 3. Data Models
 class Message(BaseModel):
     text: str
 
@@ -40,6 +37,8 @@ class RawAMLTransaction(BaseModel):
 
 class RegressionInput(BaseModel):
     features: list[float]
+
+# 4. Standard Routes
 @app.get("/")
 def home():
     return {"message": "Your FastAPI app is running!"}
@@ -47,10 +46,12 @@ def home():
 @app.get("/hello/{name}")
 def hello(name: str):
     return {"message": f"Hello, {name}!"}
+
 @app.post("/messages")
 def create_message(message: Message):
     return {"received": message.text}
 
+# 5. Combined Single /predict Route
 @app.post("/predict")
 def predict_transaction(transaction: AMLTransaction):
     try:
@@ -59,6 +60,7 @@ def predict_transaction(transaction: AMLTransaction):
             "AE": "United Arab Emirates",
         }
         is_suspicious = (transaction.amount > 10000 and transaction.source_country != transaction.destination_country)
+        
         payload = {
             "transaction_id": transaction.transaction_id,
             "amount": transaction.amount,
@@ -69,6 +71,15 @@ def predict_transaction(transaction: AMLTransaction):
             "is_suspicious": is_suspicious,
             "status": "flagged" if is_suspicious else "normal",
         }
+        
+        if transaction.source_country == "SG":
+            payload["risk_note"] = "Singapore outbound transfer pattern detected."
+            payload["country_context"] = {
+                "origin": "Singapore",
+                "destination": payload["destination_country_name"],
+                "related_alert": "Review for higher AML scrutiny."
+            }
+            
         return payload
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -91,17 +102,14 @@ def predict_raw_transaction(transaction: RawAMLTransaction):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# 6. ML Regression Route
 @app.post("/predict_regression")
 def predict_regression(data: RegressionInput):
     try:
-        # Convert user inputs into a matrix array and ask model.py for the mathematical prediction
         input_matrix = np.array(data.features).reshape(1, -1)
         raw_prediction = model.regression_model.predict(input_matrix)
-        
-        # Safely convert the raw array index item into a standard Python float scalar number
         prediction = float(raw_prediction[0])
         
-        # Determine the user-friendly text verdict for your students
         if prediction > 0.50:
             verdict = "High Risk - Flagged for AML Scrutiny"
         elif prediction > 0.30:
@@ -118,6 +126,7 @@ def predict_regression(data: RegressionInput):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Regression Error: {str(e)}")
 
+# 7. CSV Upload Route
 @app.post("/upload_raw_csv")
 async def upload_raw_csv(file: UploadFile = File(...)):
     try:
@@ -133,37 +142,3 @@ async def upload_raw_csv(file: UploadFile = File(...)):
         return {"rows_read": len(df), "preview": preview}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
-
-@app.post("/predict")
-def predict_transaction(transaction: AMLTransaction):
-    country_names = {
-        "SG": "Singapore",
-        "AE": "United Arab Emirates",
-    }
-
-    is_suspicious = (
-        transaction.amount > 10000
-        and transaction.source_country != transaction.destination_country
-    )
-
-    payload = {
-        "transaction_id": transaction.transaction_id,
-        "amount": transaction.amount,
-        "source_country": transaction.source_country,
-        "source_country_name": country_names.get(transaction.source_country, transaction.source_country),
-        "destination_country": transaction.destination_country,
-        "destination_country_name": country_names.get(transaction.destination_country, transaction.destination_country),
-        "is_suspicious": is_suspicious,
-        "status": "flagged" if is_suspicious else "normal",
-    }
-
-    if transaction.source_country == "SG":
-        payload["risk_note"] = "Singapore outbound transfer pattern detected."
-        payload["country_context"] = {
-            "origin": "Singapore",
-            "destination": payload["destination_country_name"],
-            "related_alert": "Review for higher AML scrutiny."
-        }
-
-    return payload
-
